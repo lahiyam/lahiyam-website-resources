@@ -5,7 +5,8 @@ custom:
   # commands. Or fallsback to what we have set in the provider section.
   stage: ${opt:stage, self:provider.stage}
   # Set the table name here so we can use it while testing locally
-  tableName: ${self:custom.stage}-ext-notes
+  userTableName: ${self:custom.stage}-users-table
+  postTableName: ${self:custom.stage}-posts-table
 
 provider:
   name: aws
@@ -14,29 +15,57 @@ provider:
 
 resources:
   Resources:
-    NotesTable:
+    UsersTable:
       Type: AWS::DynamoDB::Table
       Properties:
         # Generate a name based on the stage
-        TableName: ${self:custom.tableName}
+        TableName: ${self:custom.userTableName}
         AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: noteId
+          - AttributeName: id
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
+          - AttributeName: id
             KeyType: HASH
-          - AttributeName: noteId
-            KeyType: RANGE
         # Set the capacity to auto-scale
         BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          -
+            IndexName: username-index
+            KeySchema:
+              -
+                AttributeName: "username"
+                KeySchema: "HASH"
+            Projection:
+              ProjectionType: "KEYS_ONLY"
+    PostsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.postTableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          -
+            IndexName: userId-createdAt-index
+            KeySchema:
+              -
+                AttributeName: "userId"
+                KeyType: "HASH"
+              -
+                AttributeName: "createdAt"
+                KeyType: "RANGE"
+            Projection:
+              ProjectionType: "KEYS_ONLY"
 
   Outputs:
-    NotesTableArn:
+    UserTableArn:
       Value:
         Fn::GetAtt:
           - NotesTable
           - Arn
       Export:
-        Name: ${self:custom.stage}-LahiyamNotesTableArn
+        Name: ${self:custom.stage}-LahiyamUserTableArn
