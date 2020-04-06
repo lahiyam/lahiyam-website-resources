@@ -7,14 +7,14 @@ phases:
       - npm install --silent --no-progress -g serverless
   pre_build:
     commands:
+      - npm install --silent --no-progress
+  build:
+    commands:
       - npm run test
       - mkdir -p target/dev
       - mkdir target/prod
       - npm run package-all-dev
       - npm run package-all-prod
-  build:
-    commands:
-      - echo "Build - not yet implemented..."
 
 artifacts:
   files:
