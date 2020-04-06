@@ -62,10 +62,17 @@ resources:
               ProjectionType: "KEYS_ONLY"
 
   Outputs:
-    UserTableArn:
+    UsersTableArn:
       Value:
         Fn::GetAtt:
-          - NotesTable
+          - UsersTable
           - Arn
       Export:
-        Name: ${self:custom.stage}-LahiyamUserTableArn
+        Name: ${self:custom.stage}-LahiyamUsersTableArn
+    PostsTableArn:
+      Value:
+        Fn::GetAtt:
+          - PostsTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-LahiyamPostsTableArn
