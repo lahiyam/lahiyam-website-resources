@@ -39,4 +39,4 @@ resources:
           - NotesTable
           - Arn
       Export:
-        Name: ${self:custom.stage}-ExtNotesTableArn
+        Name: ${self:custom.stage}-LahiyamNotesTableArn

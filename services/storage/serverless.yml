@@ -33,16 +33,16 @@ resources:
 
   # Print out the name of the bucket that is created
   Outputs:
-    AttachmentsBucketArn:
+    LahiyamBucketArn:
       Value:
         Fn::GetAtt:
           - S3Bucket
           - Arn
       Export:
-        Name: ${self:custom.stage}-ExtAttachmentsBucketArn
+        Name: ${self:custom.stage}-LahiyamBucketArn
 
-    AttachmentsBucketName:
+    LahiyamBucketName:
       Value:
         Ref: S3Bucket
       Export:
-        Name: ${self:custom.stage}-ExtAttachmentsBucket
+        Name: ${self:custom.stage}-LahiyamBucket
