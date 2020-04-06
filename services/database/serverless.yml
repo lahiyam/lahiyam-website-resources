@@ -21,10 +21,12 @@ resources:
         # Generate a name based on the stage
         TableName: ${self:custom.userTableName}
         AttributeDefinitions:
-          - AttributeName: id
+          -
+            AttributeName: id
             AttributeType: S
         KeySchema:
-          - AttributeName: id
+          -
+            AttributeName: id
             KeyType: HASH
         # Set the capacity to auto-scale
         BillingMode: PAY_PER_REQUEST
@@ -33,10 +35,10 @@ resources:
             IndexName: username-index
             KeySchema:
               -
-                AttributeName: "username"
-                KeySchema: "HASH"
+                AttributeName: username
+                KeyType: HASH
             Projection:
-              ProjectionType: "KEYS_ONLY"
+              ProjectionType: KEYS_ONLY
     PostsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -53,13 +55,13 @@ resources:
             IndexName: userId-createdAt-index
             KeySchema:
               -
-                AttributeName: "userId"
-                KeyType: "HASH"
+                AttributeName: userId
+                KeyType: HASH
               -
-                AttributeName: "createdAt"
-                KeyType: "RANGE"
+                AttributeName: createdAt
+                KeyType: RANGE
             Projection:
-              ProjectionType: "KEYS_ONLY"
+              ProjectionType: KEYS_ONLY
 
   Outputs:
     UsersTableArn:
