@@ -1,0 +1,476 @@
+{
+  "service": {
+    "service": "notes-app-ext-auth",
+    "serviceObject": {
+      "name": "notes-app-ext-auth"
+    },
+    "provider": {
+      "stage": "dev",
+      "variableSyntax": "\\${([^{}]+?)}",
+      "name": "aws",
+      "region": "us-east-1",
+      "versionFunctions": true,
+      "remoteFunctionData": null,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+              "UserPoolName": "prod-ext-user-pool",
+              "UsernameAttributes": [
+                "email"
+              ],
+              "AutoVerifiedAttributes": [
+                "email"
+              ]
+            }
+          },
+          "CognitoUserPoolClient": {
+            "Type": "AWS::Cognito::UserPoolClient",
+            "Properties": {
+              "ClientName": "prod-ext-user-pool-client",
+              "UserPoolId": {
+                "Ref": "CognitoUserPool"
+              },
+              "ExplicitAuthFlows": [
+                "ADMIN_NO_SRP_AUTH"
+              ],
+              "GenerateSecret": false
+            }
+          },
+          "CognitoIdentityPool": {
+            "Type": "AWS::Cognito::IdentityPool",
+            "Properties": {
+              "IdentityPoolName": "prodExtIdentityPool",
+              "AllowUnauthenticatedIdentities": false,
+              "CognitoIdentityProviders": [
+                {
+                  "ClientId": {
+                    "Ref": "CognitoUserPoolClient"
+                  },
+                  "ProviderName": {
+                    "Fn::GetAtt": [
+                      "CognitoUserPool",
+                      "ProviderName"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "CognitoIdentityPoolRoles": {
+            "Type": "AWS::Cognito::IdentityPoolRoleAttachment",
+            "Properties": {
+              "IdentityPoolId": {
+                "Ref": "CognitoIdentityPool"
+              },
+              "Roles": {
+                "authenticated": {
+                  "Fn::GetAtt": [
+                    "CognitoAuthRole",
+                    "Arn"
+                  ]
+                }
+              }
+            }
+          },
+          "CognitoAuthRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "Path": "/",
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Federated": "cognito-identity.amazonaws.com"
+                    },
+                    "Action": [
+                      "sts:AssumeRoleWithWebIdentity"
+                    ],
+                    "Condition": {
+                      "StringEquals": {
+                        "cognito-identity.amazonaws.com:aud": {
+                          "Ref": "CognitoIdentityPool"
+                        }
+                      },
+                      "ForAnyValue:StringLike": {
+                        "cognito-identity.amazonaws.com:amr": "authenticated"
+                      }
+                    }
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": "CognitoAuthorizedPolicy",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "mobileanalytics:PutEvents",
+                          "cognito-sync:*",
+                          "cognito-identity:*"
+                        ],
+                        "Resource": "*"
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "s3:*"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Join": [
+                              "",
+                              [
+                                {
+                                  "Fn::ImportValue": "prod-ExtAttachmentsBucketArn"
+                                },
+                                "/private/",
+                                "$",
+                                "{cognito-identity.amazonaws.com:sub}/*"
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          },
+          "UserPoolId": {
+            "Value": {
+              "Ref": "CognitoUserPool"
+            }
+          },
+          "UserPoolClientId": {
+            "Value": {
+              "Ref": "CognitoUserPoolClient"
+            }
+          },
+          "IdentityPoolId": {
+            "Value": {
+              "Ref": "CognitoIdentityPool"
+            }
+          },
+          "CognitoAuthRole": {
+            "Value": {
+              "Ref": "CognitoAuthRole"
+            },
+            "Export": {
+              "Name": "ExtCognitoAuthRole-prod"
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      }
+    },
+    "custom": {
+      "stage": "prod"
+    },
+    "pluginsData": {},
+    "functions": {},
+    "resources": {
+      "Resources": {
+        "CognitoUserPool": {
+          "Type": "AWS::Cognito::UserPool",
+          "Properties": {
+            "UserPoolName": "prod-ext-user-pool",
+            "UsernameAttributes": [
+              "email"
+            ],
+            "AutoVerifiedAttributes": [
+              "email"
+            ]
+          }
+        },
+        "CognitoUserPoolClient": {
+          "Type": "AWS::Cognito::UserPoolClient",
+          "Properties": {
+            "ClientName": "prod-ext-user-pool-client",
+            "UserPoolId": {
+              "Ref": "CognitoUserPool"
+            },
+            "ExplicitAuthFlows": [
+              "ADMIN_NO_SRP_AUTH"
+            ],
+            "GenerateSecret": false
+          }
+        },
+        "CognitoIdentityPool": {
+          "Type": "AWS::Cognito::IdentityPool",
+          "Properties": {
+            "IdentityPoolName": "prodExtIdentityPool",
+            "AllowUnauthenticatedIdentities": false,
+            "CognitoIdentityProviders": [
+              {
+                "ClientId": {
+                  "Ref": "CognitoUserPoolClient"
+                },
+                "ProviderName": {
+                  "Fn::GetAtt": [
+                    "CognitoUserPool",
+                    "ProviderName"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "CognitoIdentityPoolRoles": {
+          "Type": "AWS::Cognito::IdentityPoolRoleAttachment",
+          "Properties": {
+            "IdentityPoolId": {
+              "Ref": "CognitoIdentityPool"
+            },
+            "Roles": {
+              "authenticated": {
+                "Fn::GetAtt": [
+                  "CognitoAuthRole",
+                  "Arn"
+                ]
+              }
+            }
+          }
+        },
+        "CognitoAuthRole": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "Path": "/",
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Federated": "cognito-identity.amazonaws.com"
+                  },
+                  "Action": [
+                    "sts:AssumeRoleWithWebIdentity"
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "cognito-identity.amazonaws.com:aud": {
+                        "Ref": "CognitoIdentityPool"
+                      }
+                    },
+                    "ForAnyValue:StringLike": {
+                      "cognito-identity.amazonaws.com:amr": "authenticated"
+                    }
+                  }
+                }
+              ]
+            },
+            "Policies": [
+              {
+                "PolicyName": "CognitoAuthorizedPolicy",
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "mobileanalytics:PutEvents",
+                        "cognito-sync:*",
+                        "cognito-identity:*"
+                      ],
+                      "Resource": "*"
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "s3:*"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Join": [
+                            "",
+                            [
+                              {
+                                "Fn::ImportValue": "prod-ExtAttachmentsBucketArn"
+                              },
+                              "/private/",
+                              "$",
+                              "{cognito-identity.amazonaws.com:sub}/*"
+                            ]
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Outputs": {
+        "UserPoolId": {
+          "Value": {
+            "Ref": "CognitoUserPool"
+          }
+        },
+        "UserPoolClientId": {
+          "Value": {
+            "Ref": "CognitoUserPoolClient"
+          }
+        },
+        "IdentityPoolId": {
+          "Value": {
+            "Ref": "CognitoIdentityPool"
+          }
+        },
+        "CognitoAuthRole": {
+          "Value": {
+            "Ref": "CognitoAuthRole"
+          },
+          "Export": {
+            "Name": "ExtCognitoAuthRole-prod"
+          }
+        }
+      }
+    },
+    "serviceFilename": "serverless.yml",
+    "layers": {},
+    "isDashboardMonitoringPreconfigured": false
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/notes-app-ext-auth/prod/1586199904628-2020-04-06T19:05:04.628Z",
+    "artifact": ""
+  }
+}

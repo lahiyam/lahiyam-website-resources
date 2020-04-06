@@ -1,0 +1,18 @@
+{
+  "name": "resources",
+  "version": "1.0.0",
+  "dependencies": {
+    
+  },
+  "private": true,
+  "scripts": {
+    "package-auth-dev": "cd services/auth && serverless package --package target/dev --stage dev -v",
+    "package-database-dev": "cd services/database && serverless package --package target/dev --stage dev -v",
+    "package-storage-dev": "cd services/storage && serverless package --package target/dev --stage dev -v",
+    "package-auth-prod": "cd services/auth && serverless package --package target/prod --stage prod -v",
+    "package-database-prod": "cd services/database && serverless package --package target/prod --stage prod -v",
+    "package-storage-prod": "cd services/storage && serverless package --package target/prod --stage prod -v",
+    "package-all-dev": "npm run package-auth-dev && concurrently \"npm:package-database-dev\" \"npm:package-storage-dev\"",
+    "package-all-prod": "npm run package-auth-prod && concurrently \"npm:package-database-prod\" \"npm:package-storage-prod\""
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "service": {
+    "service": "notes-app-ext-uploads",
+    "serviceObject": {
+      "name": "notes-app-ext-uploads"
+    },
+    "provider": {
+      "stage": "dev",
+      "variableSyntax": "\\${([^{}]+?)}",
+      "name": "aws",
+      "region": "us-east-1",
+      "versionFunctions": true,
+      "remoteFunctionData": null,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "CorsConfiguration": {
+                "CorsRules": [
+                  {
+                    "AllowedOrigins": [
+                      "*"
+                    ],
+                    "AllowedHeaders": [
+                      "*"
+                    ],
+                    "AllowedMethods": [
+                      "GET",
+                      "PUT",
+                      "POST",
+                      "DELETE",
+                      "HEAD"
+                    ],
+                    "MaxAge": 3000
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          },
+          "AttachmentsBucketArn": {
+            "Value": {
+              "Fn::GetAtt": [
+                "S3Bucket",
+                "Arn"
+              ]
+            },
+            "Export": {
+              "Name": "dev-ExtAttachmentsBucketArn"
+            }
+          },
+          "AttachmentsBucketName": {
+            "Value": {
+              "Ref": "S3Bucket"
+            },
+            "Export": {
+              "Name": "dev-ExtAttachmentsBucket"
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      }
+    },
+    "custom": {
+      "stage": "dev"
+    },
+    "pluginsData": {},
+    "functions": {},
+    "resources": {
+      "Resources": {
+        "S3Bucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "CorsConfiguration": {
+              "CorsRules": [
+                {
+                  "AllowedOrigins": [
+                    "*"
+                  ],
+                  "AllowedHeaders": [
+                    "*"
+                  ],
+                  "AllowedMethods": [
+                    "GET",
+                    "PUT",
+                    "POST",
+                    "DELETE",
+                    "HEAD"
+                  ],
+                  "MaxAge": 3000
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Outputs": {
+        "AttachmentsBucketArn": {
+          "Value": {
+            "Fn::GetAtt": [
+              "S3Bucket",
+              "Arn"
+            ]
+          },
+          "Export": {
+            "Name": "dev-ExtAttachmentsBucketArn"
+          }
+        },
+        "AttachmentsBucketName": {
+          "Value": {
+            "Ref": "S3Bucket"
+          },
+          "Export": {
+            "Name": "dev-ExtAttachmentsBucket"
+          }
+        }
+      }
+    },
+    "serviceFilename": "serverless.yml",
+    "layers": {},
+    "isDashboardMonitoringPreconfigured": false
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/notes-app-ext-uploads/dev/1586199773124-2020-04-06T19:02:53.124Z",
+    "artifact": ""
+  }
+}
