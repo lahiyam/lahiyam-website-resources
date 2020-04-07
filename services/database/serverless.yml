@@ -51,6 +51,9 @@ resources:
             AttributeName: id
             AttributeType: S
           -
+            AttributeName: userId
+            AttributeType: S
+          -
             AttributeName: createdAt
             AttributeType: N
         KeySchema:
