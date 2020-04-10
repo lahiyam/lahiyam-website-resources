@@ -43,7 +43,7 @@ resources:
             - DomainName: !GetAtt ReactDeploymentBucket.DomainName
               Id: !Ref ReactDeploymentBucket
               S3OriginConfig:
-                OriginIdentityAccess: ""
+                OriginAccessIdentity: ""
           DefaultRootObject: index.html
           Enabled: true
           DefaultCacheBehavior:
