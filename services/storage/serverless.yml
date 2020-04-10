@@ -29,31 +29,6 @@ resources:
                 - DELETE
                 - HEAD
               MaxAge: 3000
-    ReactDeploymentBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        WebsiteConfiguration:
-          IndexDocument: index.html
-    # CloudFront
-    ReactCFDistribution:
-      Type: AWS::CloudFront::Distribution
-      Properties:
-        DistributionConfig:
-          Origins:
-            - DomainName: !GetAtt ReactDeploymentBucket.DomainName
-              Id: !Ref ReactDeploymentBucket
-              S3OriginConfig:
-                OriginAccessIdentity: ""
-          DefaultRootObject: index.html
-          Enabled: true
-          DefaultCacheBehavior:
-            MinTTL: 86400 # 1 day
-            MaxTTL: 2592000 # 30 days
-            ForwardedValues:
-              QueryString: true
-            TargetOriginId: !Ref ReactDeploymentBucket
-            ViewerProtocolPolicy: "redirect-to-https"
-
   # Print out the name of the bucket that is created
   Outputs:
     LahiyamBucketArn:
@@ -63,37 +38,8 @@ resources:
           - Arn
       Export:
         Name: ${self:custom.stage}-LahiyamBucketArn
-
-    ReactDeploymentBucketArn:
-      Value:
-        Fn::GetAtt:
-          - ReactDeploymentBucket
-          - Arn
-      Export:
-        Name: ${self:custom.stage}-ReactDeploymentBucketArn
-
-    ReactCFDistributionDomainName:
-      Value:
-        Fn::GetAtt:
-          - ReactCFDistribution
-          - DomainName
-      Export:
-        Name: ${self:custom.stage}-ReactCFDistributionDomainName
-
     LahiyamBucketName:
       Value:
         Ref: S3Bucket
       Export:
         Name: ${self:custom.stage}-LahiyamBucket
-
-    ReactDeploymentBucketName:
-      Value:
-        Ref: ReactDeploymentBucket
-      Export:
-        Name: ${self:custom.stage}-ReactDeploymentBucket
-
-    ReactCFDistributionName:
-      Value:
-        Ref: ReactCFDistribution
-      Export:
-        Name: ${self:custom.stage}-ReactCFDistribution
