@@ -72,13 +72,13 @@ resources:
       Export:
         Name: ${self:custom.stage}-ReactDeploymentBucketArn
 
-    ReactCFDistributionArn:
+    ReactCFDistributionDomainName:
       Value:
         Fn::GetAtt:
           - ReactCFDistribution
-          - Arn
+          - DomainName
       Export:
-        Name: ${self:custom.stage}-ReactCFDistributionArn
+        Name: ${self:custom.stage}-ReactCFDistributionDomainName
 
     LahiyamBucketName:
       Value:
