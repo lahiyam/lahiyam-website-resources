@@ -78,7 +78,7 @@ resources:
           - ReactCFDistribution
           - Arn
       Export:
-        Name: ${self:custom.stage}-ReactCFDistribution
+        Name: ${self:custom.stage}-ReactCFDistributionArn
 
     LahiyamBucketName:
       Value:
