@@ -2,17 +2,21 @@
   "name": "resources",
   "version": "1.0.0",
   "devDependencies": {
-    "concurrently": "^5.1.0"
+    "concurrently": "^5.1.0",
+    "serverless": "^1.67.3"
   },
   "private": true,
   "scripts": {
     "package-auth-dev": "cd services/auth && serverless package --package target/dev --stage dev -v",
     "package-database-dev": "cd services/database && serverless package --package target/dev --stage dev -v",
     "package-storage-dev": "cd services/storage && serverless package --package target/dev --stage dev -v",
+    "package-cdn-dev": "cd services/cdn && serverless package --package target/dev --stage dev -v",
     "package-auth-prod": "cd services/auth && serverless package --package target/prod --stage prod -v",
     "package-database-prod": "cd services/database && serverless package --package target/prod --stage prod -v",
     "package-storage-prod": "cd services/storage && serverless package --package target/prod --stage prod -v",
-    "package-all-dev": "npm run package-auth-dev && concurrently \"npm:package-database-dev\" \"npm:package-storage-dev\"",
-    "package-all-prod": "npm run package-auth-prod && concurrently \"npm:package-database-prod\" \"npm:package-storage-prod\""
+    "package-cdn-prod": "cd services/cdn && serverless package --package target/prod --stage prod -v",
+    "package-all-dev": "concurrently \"npm:package-auth-dev\" \"npm:package-database-dev\" \"npm:package-storage-dev\" \"npm:package-cdn-dev\"",
+    "package-all-prod": "concurrently \"npm:package-auth-prod\" \"npm:package-database-prod\" \"npm:package-storage-prod\" \"npm:package-cdn-prod\"",
+    "package-all": "npm run package-all-dev && npm run package-all-prod"
   }
 }

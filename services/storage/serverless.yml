@@ -29,6 +29,11 @@ resources:
                 - DELETE
                 - HEAD
               MaxAge: 3000
+    ReactDeploymentBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        WebsiteConfiguration:
+          IndexDocument: index.html
   # Print out the name of the bucket that is created
   Outputs:
     LahiyamBucketArn:
@@ -43,3 +48,22 @@ resources:
         Ref: S3Bucket
       Export:
         Name: ${self:custom.stage}-LahiyamBucket
+    ReactDeploymentBucketArn:
+      Value:
+        Fn::GetAtt:
+          - ReactDeploymentBucket
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-ReactDeploymentBucketArn
+    ReactDeploymentBucketDomainName:
+      Value:
+        Fn::GetAtt:
+          - ReactDeploymentBucket
+          - DomainName
+      Export:
+        Name: ${self:custom.stage}-ReactDeploymentBucketDomainName
+    ReactDeploymentBucketName:
+      Value:
+        Ref: ReactDeploymentBucket
+      Export:
+        Name: ${self:custom.stage}-ReactDeploymentBucket

@@ -1,0 +1,134 @@
+service: lahiyam-website-cdn
+
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or fallsback to what we have set in the provider section.
+  stage: ${opt:stage, self:provider.stage}
+  webpack:
+    webpackConfig: "webpack.config.js"
+    includeModules:
+      forceExclude:
+        - aws-sdk
+  acmCerts:
+    dev: "arn:aws:acm:us-east-1:345050357001:certificate/f08fe883-db59-4257-9ae4-44ec3532883d"
+    prod: "arn:aws:acm:us-east-1:345050357001:certificate/95d36af6-c288-4116-a1e8-9d2b42e73634"
+package:
+  individually: true
+
+plugins:
+  - serverless-webpack
+
+provider:
+  name: aws
+  stage: dev
+  region: us-east-1
+  runtime: nodejs10.x
+  timeout: 5
+  tracing:
+    lambda: true
+
+  environment:
+    stage: ${self:custom.stage}
+    resourcesStage: ${self:custom.stage}
+    deploymentBucketName: !ImportValue ${self:custom.stage}-ReactDeploymentBucket
+    cfDistributionId: !Ref ReactCFDistribution
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "logs:*"
+        - "cloudfront:CreateInvalidation"
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "codepipeline:PutJobSuccessResult"
+        - "codepipeline:PutJobFailureResult"
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "s3:Get*"
+        - "s3:Put*"
+      Resource:
+        - !ImportValue ${self:custom.stage}-ReactDeploymentBucketArn
+        - !Join
+          - ""
+          - - !ImportValue ${self:custom.stage}-ReactDeploymentBucketArn
+            - "/*"
+    - Effect: "Allow"
+      Action:
+        - "s3:Get*"
+      Resource:
+        - "arn:aws:s3:::artifacts.lahiyam.com"
+        - "arn:aws:s3:::artifacts.lahiyam.com/*"
+    - Effect: "Allow"
+      Action:
+        - "route53:*"
+      Resource:
+        - "arn:aws:route53:::hostedzone/Z17LM9NTLUAFTT"
+functions:
+  ReactDeploymentFunction:
+    handler: handlers/ReactDeploymentFunction.handler
+
+resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.stage}
+        - prod
+  Resources:
+    # CloudFront
+    ReactCFDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Aliases:
+            - "Fn::If": [IsProd, "lahiyam.com", "dev.lahiyam.com"]
+          ViewerCertificate:
+            AcmCertificateArn: ${self:custom.acmCerts.${self:custom.stage}}
+            MinimumProtocolVersion: "TLSv1.2_2018"
+            SslSupportMethod: "sni-only"
+          Origins:
+            - DomainName: !ImportValue ${self:custom.stage}-ReactDeploymentBucketDomainName
+              Id: !ImportValue ${self:custom.stage}-ReactDeploymentBucket
+              S3OriginConfig:
+                OriginAccessIdentity: ""
+          DefaultRootObject: index.html
+          CustomErrorResponses:
+            - ErrorCode: 403
+              ResponseCode: 200
+              ResponsePagePath: "/index.html"
+            - ErrorCode: 404
+              ResponseCode: 200
+              ResponsePagePath: "/index.html"
+          Enabled: true
+          DefaultCacheBehavior:
+            MinTTL: 86400 # 1 day
+            MaxTTL: 2592000 # 30 days
+            ForwardedValues:
+              QueryString: true
+            TargetOriginId: !ImportValue ${self:custom.stage}-ReactDeploymentBucket
+            ViewerProtocolPolicy: "redirect-to-https"
+    Route53RecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        AliasTarget:
+          DNSName: !GetAtt ReactCFDistribution.DomainName
+          HostedZoneId: "Z2FDTNDATAQYW2"
+        HostedZoneId: "Z17LM9NTLUAFTT"
+        Name:
+          Fn::If: [IsProd, "lahiyam.com", "dev.lahiyam.com"]
+        Type: "A"
+
+  Outputs:
+    ReactCFDistributionDomainName:
+      Value:
+        Fn::GetAtt:
+          - ReactCFDistribution
+          - DomainName
+      Export:
+        Name: ${self:custom.stage}-ReactCFDistributionDomainName
+    ReactCFDistributionName:
+      Value:
+        Ref: ReactCFDistribution
+      Export:
+        Name: ${self:custom.stage}-ReactCFDistribution

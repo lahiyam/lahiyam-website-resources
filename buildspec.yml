@@ -13,9 +13,7 @@ phases:
       - npm run test
       - mkdir -p target/dev
       - mkdir target/prod
-      - npm run package-all-dev
-      - npm run package-all-prod
-
+      - npm run package-all
 artifacts:
   files:
     - services/**/target/**/*

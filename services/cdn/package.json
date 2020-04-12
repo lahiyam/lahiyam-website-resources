@@ -1,0 +1,27 @@
+{
+  "name": "cdn",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "adm-zip": "^0.4.14",
+    "aws-lambda": "^1.0.5",
+    "aws-xray-sdk": "^2.5.0",
+    "dotenv": "^8.2.0",
+    "typescript": "^3.8.3",
+    "uuid": "^7.0.3",
+    "mime-types": "^2.1.26"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.656.0",
+    "serverless-bundle": "^1.3.3",
+    "@babel/plugin-proposal-decorators": "^7.8.3",
+    "@babel/preset-typescript": "^7.9.0",
+    "mocha": "^7.1.1",
+    "serverless-mocha-plugin": "^1.12.0",
+    "webpack-node-externals": "^1.7.2",
+    "ts-loader": "^6.2.2"
+  },
+  "scripts": {
+    "test-job-invoke-event": "serverless invoke local --function ReactDeploymentFunction --path events/test_codepipeline_invoke.json -e cfDistributionId=\"E2K3DGWU5EF6MZ\" -e deploymentBucketName=\"lahiyam-website-app-dev-reactdeploymentbucket-w6jvo278pi8t\""
+  }
+}
