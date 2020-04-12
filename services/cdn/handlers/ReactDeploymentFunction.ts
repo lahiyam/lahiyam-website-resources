@@ -5,6 +5,9 @@ const codePipeline = new AWS.CodePipeline();
 const cloudFront = new AWS.CloudFront();
 const admZip = require("adm-zip");
 const mimeTypes = require("mime-types");
+const stage = process.env.stage ? process.env.stage : "dev";
+const REACT_BUILD_DIR = `services/app/build/${stage}/`;
+const chalk = require("chalk");
 
 async function uploadFileToS3(
   key,
@@ -24,6 +27,7 @@ async function uploadFileToS3(
   if (additionalParams) {
     Object.assign(params, additionalParams);
   }
+  console.log(`Uploading ${chalk.yellow(key)}...`);
   return s3.putObject(params).promise();
 }
 
@@ -41,8 +45,8 @@ async function clearCdnCache(
 }
 
 async function extractArchiveToS3(params): Promise<AWS.S3.GetObjectOutput> {
-  let s3PromiseResult = await s3.getObject(params).promise();
-  let zip = new admZip(s3PromiseResult.Body);
+  let s3PromiseResult = s3.getObject(params).promise();
+  let zip = new admZip((await s3PromiseResult).Body);
   let zipFiles = zip.getEntries();
   for (const file of zipFiles) {
     let filePath = file.entryName;
@@ -60,11 +64,13 @@ async function extractArchiveToS3(params): Promise<AWS.S3.GetObjectOutput> {
       await uploadFileToS3(s3Key, file.getData(), additionalParams);
     }
   }
+  console.log(
+    chalk.blue(
+      `Visit bucket to see files: https://s3.console.aws.amazon.com/s3/buckets/${process.env.deploymentBucketName}`
+    )
+  );
   return s3PromiseResult;
 }
-
-const stage = process.env.stage ? process.env.stage : "dev";
-const REACT_BUILD_DIR = `services/app/build/${stage}`;
 
 export const handler = async (event, _context): Promise<void> => {
   console.log("EVENT\n\n", JSON.stringify(event, null, 2));
