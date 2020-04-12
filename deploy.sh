@@ -1,4 +1,5 @@
 #! /bin/bash
+npm install -g serverless
 npm install --silent --no-progress
 cd $CODEBUILD_SRC_DIR/services/$service || exit
 npm install --silent --no-progress
