@@ -3,11 +3,11 @@ version: 0.2
 phases:
   install:
     commands:
-      - npm install --silent --no-progress -g npm
       - npm install --silent --no-progress -g serverless
   pre_build:
     commands:
       - npm install --silent --no-progress
+      - cd $CODEBUILD_SRC_DIR/services/cdn && npm install --silent --no-progress
   build:
     commands:
       - npm run test
