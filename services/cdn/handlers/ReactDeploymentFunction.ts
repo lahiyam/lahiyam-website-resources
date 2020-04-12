@@ -63,7 +63,8 @@ async function extractArchiveToS3(params): Promise<AWS.S3.GetObjectOutput> {
   return s3PromiseResult;
 }
 
-const REACT_BUILD_DIR = "services/app/build/";
+const stage = process.env.stage ? process.env.stage : "dev";
+const REACT_BUILD_DIR = `services/app/build/${stage}`;
 
 export const handler = async (event, _context): Promise<void> => {
   console.log("EVENT\n\n", JSON.stringify(event, null, 2));
