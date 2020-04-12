@@ -1,9 +1,6 @@
 version: 0.2
 
 phases:
-  install:
-    commands:
-      - npm install --silent --no-progress -g serverless
   pre_build:
     commands:
       - npm install --silent --no-progress
@@ -19,4 +16,6 @@ artifacts:
   files:
     - services/**/target/**/*
     - services/**/serverless.yml
+    - services/*/package.json
+    - package.json
     - deploy.sh

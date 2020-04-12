@@ -60,11 +60,6 @@ provider:
       Resource:
         - "arn:aws:s3:::artifacts.lahiyam.com"
         - "arn:aws:s3:::artifacts.lahiyam.com/*"
-    - Effect: "Allow"
-      Action:
-        - "route53:*"
-      Resource:
-        - "arn:aws:route53:::hostedzone/Z17LM9NTLUAFTT"
 functions:
   ReactDeploymentFunction:
     handler: handlers/ReactDeploymentFunction.handler
