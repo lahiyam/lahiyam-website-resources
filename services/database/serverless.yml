@@ -61,9 +61,9 @@ resources:
                 KeyType: HASH
               - AttributeName: createdAt
                 KeyType: RANGE
-            NonKeyAttributes:
-              - "title"
             Projection:
+              NonKeyAttributes:
+                - "title"
               ProjectionType: INCLUDE
 
   Outputs:
