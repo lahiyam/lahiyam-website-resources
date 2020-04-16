@@ -48,8 +48,6 @@ resources:
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: N
-          - AttributeName: title
-            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
