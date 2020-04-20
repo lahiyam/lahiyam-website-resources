@@ -7,6 +7,7 @@ custom:
   # Set the table name here so we can use it while testing locally
   userTableName: ${self:custom.stage}-lahiyam-users-table
   postTableName: ${self:custom.stage}-lahiyam-posts-table
+  sitePreferencesTableName: ${self:custom.stage}-lahiyam-site-preferences-table
 
 provider:
   name: aws
@@ -67,6 +68,17 @@ resources:
               NonKeyAttributes:
                 - "title"
               ProjectionType: INCLUDE
+    SitePreferencesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.sitePreferencesTableName}
+        AttributeDefintions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
 
   Outputs:
     UsersTableArn:
