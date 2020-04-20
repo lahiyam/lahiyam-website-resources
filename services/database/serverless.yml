@@ -48,6 +48,8 @@ resources:
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: N
+          - AttributeName: title
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
@@ -63,6 +65,14 @@ resources:
               NonKeyAttributes:
                 - "title"
               ProjectionType: INCLUDE
+          - IndexName: title-id-index
+            KeySchema:
+              - AttributeName: title
+                KeyType: HASH
+            Project:
+              NonKeyAttributes:
+                - "id"
+              ProjectType: INCLUDE
 
   Outputs:
     UsersTableArn:
