@@ -69,10 +69,10 @@ resources:
             KeySchema:
               - AttributeName: title
                 KeyType: HASH
-            Project:
+            Projection:
               NonKeyAttributes:
                 - "id"
-              ProjectType: INCLUDE
+              ProjectionType: INCLUDE
 
   Outputs:
     UsersTableArn:
