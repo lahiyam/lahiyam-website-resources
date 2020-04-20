@@ -95,3 +95,10 @@ resources:
           - Arn
       Export:
         Name: ${self:custom.stage}-LahiyamPostsTableArn
+    SitePreferencesArn:
+      Value:
+        Fn::GetAtt:
+          - SitePreferencesTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-LahiyamSitePreferencesTableArn
