@@ -65,14 +65,6 @@ resources:
               NonKeyAttributes:
                 - "title"
               ProjectionType: INCLUDE
-          - IndexName: title-id-index
-            KeySchema:
-              - AttributeName: title
-                KeyType: HASH
-            Projection:
-              NonKeyAttributes:
-                - "id"
-              ProjectionType: INCLUDE
 
   Outputs:
     UsersTableArn:
